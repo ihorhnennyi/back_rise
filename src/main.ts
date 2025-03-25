@@ -16,6 +16,7 @@ async function bootstrap() {
   });
 
   app.useGlobalFilters(new HttpExceptionFilter());
+  app.setGlobalPrefix('api');
 
   const config = new DocumentBuilder()
     .setTitle('CRM API')
@@ -29,7 +30,7 @@ async function bootstrap() {
 
   const PORT = process.env.PORT ? Number(process.env.PORT) : 8000;
 
-  await app.listen(PORT);
+  await app.listen(PORT, '0.0.0.0');
   console.log(`Сервер запущен на: http://localhost:${PORT}`);
   console.log(`Swagger API Docs: http://localhost:${PORT}/api/docs`);
 }
