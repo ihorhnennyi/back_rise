@@ -113,12 +113,18 @@ export class CandidatesService {
     if (!candidate) {
       throw new NotFoundException('Кандидат не знайдений');
     }
+    const isAdmin = user.role === UserRole.ADMIN;
 
-    // ✅ Разрешаем админу видеть всех кандидатов
-    if (
-      user.role !== UserRole.ADMIN &&
-      candidate.assignedTo?.toString() !== user.id
-    ) {
+    const assignedTo = candidate.assignedTo as any;
+
+    const assignedToId =
+      typeof assignedTo === 'object' && assignedTo !== null
+        ? assignedTo._id?.toString()
+        : assignedTo?.toString();
+
+    const isOwner = assignedToId === user.id;
+
+    if (!isAdmin && !isOwner) {
       throw new ForbiddenException('Ви не маєте доступу до цього кандидата');
     }
 

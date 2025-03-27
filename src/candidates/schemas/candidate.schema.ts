@@ -15,7 +15,7 @@ export class Candidate extends Document {
   @Prop({ required: true })
   age: number; // Возраст
 
-  @Prop({ required: true, unique: true, trim: true })
+  @Prop({ trim: true })
   email: string; // Email
 
   @Prop({ required: false, trim: true })
@@ -36,7 +36,7 @@ export class Candidate extends Document {
   @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'User' })
   assignedTo?: Types.ObjectId; // Текущий рекрутер
 
-  @Prop({ required: true })
+  @Prop({ trim: true })
   salary: number; // Зарплата
 
   @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'Status', required: false })
