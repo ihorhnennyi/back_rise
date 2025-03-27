@@ -37,7 +37,8 @@ export class CreateCandidateDto {
 
   @ApiProperty({ example: 'user@example.com', description: 'Email' })
   @IsEmail()
-  email: string;
+  @IsOptional()
+  email?: string;
 
   @ApiProperty({ example: '+380991234567', description: 'Телефон' })
   @IsString()
