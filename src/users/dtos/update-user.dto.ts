@@ -9,6 +9,7 @@ import {
   Matches,
   MinLength,
 } from 'class-validator';
+import { UserRole } from 'src/auth/enums/user-role.enum';
 
 export class UpdateUserDto {
   @ApiProperty({ example: 'Иван', description: 'Имя', required: false })
@@ -180,4 +181,14 @@ export class UpdateUserDto {
   })
   @IsOptional()
   password?: string;
+
+  @IsEnum(UserRole)
+  @IsOptional()
+  @ApiProperty({
+    example: 'admin',
+    description: 'Нова роль користувача',
+    enum: UserRole,
+    required: false,
+  })
+  role?: UserRole;
 }

@@ -13,13 +13,13 @@ import {
 export class CreateCandidateDto {
   @ApiProperty({ example: 'Іван', description: "Ім'я" })
   @IsString()
-  @IsNotEmpty()
+  @IsNotEmpty({ message: 'Ім’я є обовʼязковим' })
   firstName: string;
 
-  @ApiProperty({ example: 'Петров', description: 'Прізвище' })
+  @ApiProperty({ example: 'Петров', description: 'Прізвище', required: false })
   @IsString()
-  @IsNotEmpty()
-  lastName: string;
+  @IsOptional()
+  lastName?: string;
 
   @ApiProperty({
     example: 'Іванович',
@@ -30,10 +30,11 @@ export class CreateCandidateDto {
   @IsOptional()
   middleName?: string;
 
-  @ApiProperty({ example: 25, description: 'Вік' })
+  @ApiProperty({ example: 25, description: 'Вік', required: false })
   @IsNumber()
   @Min(18)
-  age: number;
+  @IsOptional()
+  age?: number;
 
   @ApiProperty({ example: 'user@example.com', description: 'Email' })
   @IsEmail()
@@ -42,7 +43,7 @@ export class CreateCandidateDto {
 
   @ApiProperty({ example: '+380991234567', description: 'Телефон' })
   @IsString()
-  @IsNotEmpty()
+  @IsNotEmpty({ message: 'Телефон є обовʼязковим' })
   phone: string;
 
   @ApiProperty({
@@ -69,13 +70,14 @@ export class CreateCandidateDto {
     required: false,
   })
   @IsOptional()
-  @Matches(/^[a-fA-F0-9]{24}$|^$/, { message: 'Некорректный ID города' }) // Разрешаем пустую строку
+  @Matches(/^[a-fA-F0-9]{24}$|^$/, { message: 'Некорректний ID міста' })
   city?: string;
 
-  @ApiProperty({ example: '1000', description: 'Зарплата' })
+  @ApiProperty({ example: '1000', description: 'Зарплата', required: false })
   @IsNumber()
   @Min(0)
-  salary: number;
+  @IsOptional()
+  salary?: number;
 
   @ApiProperty({
     example: '652c5c7a7c9e4e3b2a7a72b6',
@@ -83,7 +85,7 @@ export class CreateCandidateDto {
     required: false,
   })
   @IsOptional()
-  @Matches(/^[a-fA-F0-9]{24}$|^$/, { message: 'Некорректный ID статуса' }) // Разрешаем пустую строку
+  @Matches(/^[a-fA-F0-9]{24}$|^$/, { message: 'Некорректний ID статусу' })
   status?: string;
 
   @ApiProperty({
@@ -100,6 +102,15 @@ export class CreateCandidateDto {
     required: false,
   })
   @IsOptional()
-  @IsMongoId({ message: 'Некорректный ID рекрутера' }) // Если передается — проверяем, но не требуем
+  @IsMongoId({ message: 'Некорректний ID рекрутера' })
   recruiterId?: string;
+
+  @ApiProperty({
+    example: 'sourceObjectId',
+    description: 'ID джерела',
+    required: false,
+  })
+  @IsMongoId()
+  @IsOptional()
+  source?: string;
 }

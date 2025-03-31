@@ -29,6 +29,7 @@ export class BranchesService {
     if (!isValidObjectId(user.id)) {
       throw new BadRequestException('Некоректний ID користувача');
     }
+
     if (!isValidObjectId(dto.city)) {
       throw new BadRequestException('Некоректний ID міста');
     }
@@ -49,7 +50,7 @@ export class BranchesService {
       throw new Error('Помилка створення філії');
     }
 
-    this.logger.log(`✅ Філія ${branch._id} створена користувачем ${user.id}`);
+    this.logger.log(`Філія ${branch._id} створена користувачем ${user.id}`);
 
     await this.usersService.addCreatedEntity(
       user.id,
@@ -121,15 +122,12 @@ export class BranchesService {
     await this.branchModel.findByIdAndDelete(id).exec();
     await this.usersService.removeCreatedEntity(user.id, id, 'branch');
 
-    this.logger.log(`❌ Філія ${id} видалена користувачем ${user.id}`);
+    this.logger.log(`Філія ${id} видалена користувачем ${user.id}`);
   }
 
-  /**
-   * 🛡 Перевіряє, чи є користувач адміністратором
-   */
   private validateAdmin(user: any) {
     if (!user || user.role !== 'admin') {
-      this.logger.warn(`🚫 Доступ заборонено для користувача ${user?.id}`);
+      this.logger.warn(`Доступ заборонено для користувача ${user?.id}`);
       throw new ForbiddenException('Доступ заборонено');
     }
   }

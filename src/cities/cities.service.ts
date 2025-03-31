@@ -18,7 +18,7 @@ export class CitiesService {
 
   constructor(
     @InjectModel(City.name) private cityModel: Model<City>,
-    private readonly usersService: UsersService, // ✅ Використовуємо UsersService для роботи з користувачами
+    private readonly usersService: UsersService,
   ) {}
 
   async create(dto: CreateCityDto, user: any): Promise<City> {
@@ -40,7 +40,6 @@ export class CitiesService {
 
     this.logger.log(`✅ Місто ${city._id} створене користувачем ${user.id}`);
 
-    // Додаємо місто до списку створених користувачем
     await this.usersService.addCreatedEntity(
       user.id,
       city._id.toString(),
@@ -112,14 +111,14 @@ export class CitiesService {
 
     await this.usersService.removeCreatedEntity(user.id, id, 'city');
 
-    this.logger.log(`❌ Місто ${id} видалене користувачем ${user.id}`);
+    this.logger.log(`Місто ${id} видалене користувачем ${user.id}`);
 
     return { message: 'Місто успішно видалене' };
   }
 
   private validateAdmin(user: any) {
     if (!user || user.role !== 'admin') {
-      this.logger.warn(`🚫 Доступ заборонено для користувача ${user?.id}`);
+      this.logger.warn(`Доступ заборонено для користувача ${user?.id}`);
       throw new ForbiddenException('Доступ заборонено');
     }
   }

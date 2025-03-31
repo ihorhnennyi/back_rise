@@ -10,7 +10,6 @@ export class City extends Document {
     required: true,
     type: MongooseSchema.Types.ObjectId,
     ref: 'User',
-    default: null,
   })
   createdBy: Types.ObjectId;
 }

@@ -18,9 +18,6 @@ export class CandidatesService {
     @InjectModel(User.name) private userModel: Model<User>,
   ) {}
 
-  /**
-   * 🔹 Створити кандидата
-   */
   async createCandidate(
     dto: CreateCandidateDto,
     user: User,
@@ -29,6 +26,7 @@ export class CandidatesService {
       ...dto,
       createdBy: new Types.ObjectId(user.id),
       assignedTo: new Types.ObjectId(user.id),
+      source: dto.source ? new Types.ObjectId(dto.source) : undefined,
       statusHistory: dto.expirationDate
         ? [
             {
@@ -41,7 +39,6 @@ export class CandidatesService {
 
     const savedCandidate = await newCandidate.save();
 
-    // ✅ Оновлюємо у користувача список створених кандидатів
     await this.userModel.findByIdAndUpdate(user.id, {
       $push: { createdCandidates: savedCandidate._id },
     });
@@ -49,9 +46,6 @@ export class CandidatesService {
     return savedCandidate;
   }
 
-  /**
-   * 🔹 Оновити дані кандидата
-   */
   async updateCandidate(
     candidateId: string,
     dto: UpdateCandidateDto,
@@ -81,26 +75,17 @@ export class CandidatesService {
         status: new Types.ObjectId(dto.status),
         expirationDate: dto.expirationDate
           ? new Date(dto.expirationDate)
-          : undefined, // ✅ Замість null ставимо undefined
+          : undefined,
       });
     }
 
     return candidate.save();
   }
 
-  /**
-   * 🔹 Отримати всіх кандидатів (рекрутер бачить тільки своїх, адміністратор - всіх)
-   */
   async findAllCandidates(user: User): Promise<Candidate[]> {
-    if (user.role === UserRole.ADMIN) {
-      return this.candidateModel.find().populate('createdBy assignedTo').exec();
-    }
-    return this.candidateModel.find({ assignedTo: user.id }).exec();
+    return this.candidateModel.find().populate('createdBy assignedTo').exec();
   }
 
-  /**
-   * 🔹 Отримати одного кандидата за ID
-   */
   async findCandidateById(candidateId: string, user: User): Promise<Candidate> {
     if (!isValidObjectId(candidateId)) {
       throw new NotFoundException('Некоректний ID кандидата');
@@ -131,9 +116,6 @@ export class CandidatesService {
     return candidate;
   }
 
-  /**
-   * 🔹 Видалити кандидата (тільки той, хто його створив, або адміністратор)
-   */
   async deleteCandidate(candidateId: string, user: User): Promise<void> {
     if (!isValidObjectId(candidateId)) {
       throw new NotFoundException('Некоректний ID кандидата');
@@ -151,12 +133,13 @@ export class CandidatesService {
       throw new ForbiddenException('Ви не можете видалити цього кандидата');
     }
 
+    await this.userModel.findByIdAndUpdate(candidate.createdBy, {
+      $pull: { createdCandidates: candidate._id },
+    });
+
     await this.candidateModel.findByIdAndDelete(candidateId);
   }
 
-  /**
-   * 🔹 Передача кандидата іншому рекрутеру (тільки адміністратор)
-   */
   async reassignCandidate(
     candidateId: string,
     recruiterId: string,
@@ -177,20 +160,17 @@ export class CandidatesService {
       throw new NotFoundException('Кандидат не знайдений');
     }
 
-    const oldRecruiterId = candidate.assignedTo?.toString(); // Старий рекрутер
+    const oldRecruiterId = candidate.assignedTo?.toString();
 
-    // ✅ Оновлюємо рекрутера у кандидата
     candidate.assignedTo = new Types.ObjectId(recruiterId);
     await candidate.save();
 
-    // ✅ Видаляємо кандидата у старого рекрутера
     if (oldRecruiterId) {
       await this.userModel.findByIdAndUpdate(oldRecruiterId, {
         $pull: { createdCandidates: candidate._id },
       });
     }
 
-    // ✅ Додаємо кандидата новому рекрутеру
     await this.userModel.findByIdAndUpdate(recruiterId, {
       $push: { createdCandidates: candidate._id },
     });

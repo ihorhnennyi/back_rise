@@ -1,9 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Schema as MongooseSchema, Types } from 'mongoose';
 
-/**
- * 🏢 Схема філії для MongoDB
- */
 @Schema({ timestamps: true })
 export class Branch extends Document {
   @Prop({
@@ -14,18 +11,17 @@ export class Branch extends Document {
     maxlength: 50,
     index: true,
   })
-  name: string; // 🏢 Назва філії
+  name: string;
 
   @Prop({ required: true, type: MongooseSchema.Types.ObjectId, ref: 'City' })
-  city: Types.ObjectId; // 📍 Місто, до якого належить філія
+  city: Types.ObjectId;
 
   @Prop({ required: true, type: MongooseSchema.Types.ObjectId, ref: 'User' })
-  createdBy: Types.ObjectId; // 👤 Користувач, який створив філію
+  createdBy: Types.ObjectId;
 }
 
 export const BranchSchema = SchemaFactory.createForClass(Branch);
 
-// 🔄 Автоматично конвертуємо ObjectId в рядок при отриманні JSON
 BranchSchema.set('toJSON', {
   virtuals: true,
   versionKey: false,

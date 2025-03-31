@@ -29,7 +29,6 @@ import { UsersService } from './users.service';
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
-  // 🔹 Создать рекрутера (только админ)
   @Post()
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.ADMIN)
@@ -40,7 +39,6 @@ export class UsersController {
     return this.usersService.createRecruiter(dto, req.user);
   }
 
-  // 🔹 Получить всех пользователей
   @Get()
   @UseGuards(JwtAuthGuard)
   @ApiOperation({ summary: 'Отримати всіх користувачів' })
@@ -52,7 +50,6 @@ export class UsersController {
     return this.usersService.findAll();
   }
 
-  // 🔹 Получить одного пользователя по ID
   @Get(':id')
   @UseGuards(JwtAuthGuard)
   @ApiOperation({ summary: 'Отримати користувача за ID' })
@@ -62,7 +59,6 @@ export class UsersController {
     return this.usersService.findOneById(id);
   }
 
-  // 🔹 Обновить пользователя (только админ)
   @Patch(':id')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.ADMIN)
@@ -74,7 +70,6 @@ export class UsersController {
     return this.usersService.update(id, dto);
   }
 
-  // 🔹 Удалить пользователя (только админ)
   @Delete(':id')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.ADMIN)
@@ -86,7 +81,6 @@ export class UsersController {
     return this.usersService.delete(id);
   }
 
-  // 🔹 Получить список городов, созданных пользователем
   @Get(':id/created-cities')
   @UseGuards(JwtAuthGuard)
   @ApiOperation({ summary: 'Отримати всі створені користувачем міста' })
@@ -95,7 +89,6 @@ export class UsersController {
     return user?.createdCities ?? [];
   }
 
-  // 🔹 Получить список филиалов, созданных пользователем
   @Get(':id/created-branches')
   @UseGuards(JwtAuthGuard)
   @ApiOperation({ summary: 'Отримати всі створені користувачем філії' })
@@ -104,7 +97,6 @@ export class UsersController {
     return user?.createdBranches ?? [];
   }
 
-  // 🔹 Получить список статусов, созданных пользователем
   @Get(':id/created-statuses')
   @UseGuards(JwtAuthGuard)
   @ApiOperation({ summary: 'Отримати всі створені користувачем статуси' })
@@ -113,7 +105,6 @@ export class UsersController {
     return user?.createdStatuses ?? [];
   }
 
-  // 🔹 Получить список интеграций, созданных пользователем
   @Get(':id/created-integrations')
   @UseGuards(JwtAuthGuard)
   @ApiOperation({ summary: 'Отримати всі створені користувачем інтеграції' })
@@ -122,7 +113,6 @@ export class UsersController {
     return user?.createdIntegrations ?? [];
   }
 
-  // 🔹 Получить список пользователей, созданных администратором
   @Get(':id/created-users')
   @UseGuards(JwtAuthGuard)
   @ApiOperation({
@@ -133,11 +123,26 @@ export class UsersController {
     return user?.createdUsers ?? [];
   }
 
-  // 🔹 Получить все сущности, созданные пользователем
   @Get(':id/entities')
   @UseGuards(JwtAuthGuard)
   @ApiOperation({ summary: 'Отримати всі створені користувачем сутності' })
   async getUserEntities(@Param('id') id: string) {
     return this.usersService.getUserEntities(id);
+  }
+
+  @Get(':id/created-sources')
+  @UseGuards(JwtAuthGuard)
+  @ApiOperation({ summary: 'Отримати всі створені користувачем джерела' })
+  async getCreatedSources(@Param('id') id: string) {
+    const user = await this.usersService.findOneById(id);
+    return user?.createdSources ?? [];
+  }
+
+  @Get(':id/created-candidates')
+  @UseGuards(JwtAuthGuard)
+  @ApiOperation({ summary: 'Отримати всіх створених кандидатом' })
+  async getCreatedCandidates(@Param('id') id: string) {
+    const user = await this.usersService.findOneById(id);
+    return user?.createdCandidates ?? [];
   }
 }

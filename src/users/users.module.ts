@@ -13,7 +13,7 @@ import { UsersService } from './users.service';
   imports: [
     MongooseModule.forFeature([
       { name: User.name, schema: UserSchema },
-      { name: Candidate.name, schema: CandidateSchema }, // 👈 Добавляем модель кандидатов
+      { name: Candidate.name, schema: CandidateSchema },
     ]),
     forwardRef(() => AuthModule),
   ],

@@ -103,4 +103,9 @@ export class UpdateCandidateDto {
   @IsDateString()
   @IsOptional()
   expirationDate?: string;
+
+  @IsMongoId()
+  @IsOptional()
+  @ApiProperty({ example: 'sourceObjectId', description: 'ID джерела' })
+  source?: string;
 }

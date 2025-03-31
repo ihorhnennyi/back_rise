@@ -7,43 +7,42 @@ import { CandidatesModule } from './candidates/candidates.module';
 import { CitiesModule } from './cities/cities.module';
 import { DatabaseModule } from './database/database.module';
 import { IntegrationsModule } from './integrations/integrations.module';
+import { SourcesModule } from './source/source.module';
 import { StatusesModule } from './statuses/statuses.module';
 import { UsersModule } from './users/users.module';
 
-/**
- * 📌 Основний модуль застосунку
- */
 @Module({
   imports: [
     ConfigModule.forRoot({
-      isGlobal: true, // ✅ Глобальний доступ до змінних середовища
-      validate: validateEnv, // 🔍 Перевірка змінних перед запуском
+      isGlobal: true,
+      validate: validateEnv,
     }),
     MongooseModule.forRoot(
       process.env.MONGO_URI || 'mongodb://localhost:27017/app',
-    ), // ✅ Підключення до MongoDB
+    ),
     DatabaseModule,
     AuthModule,
     UsersModule,
+    CandidatesModule,
     CitiesModule,
     BranchesModule,
     StatusesModule,
     IntegrationsModule,
-    CandidatesModule,
+    SourcesModule,
   ],
 })
 export class AppModule {
   constructor() {
-    console.log('🚀 Система успішно завантажена!');
+    console.log('Система успішно завантажена!');
   }
 }
 
 function validateEnv(env: Record<string, any>) {
   if (!env.MONGO_URI) {
-    throw new Error('❌ MONGO_URI не встановлено в .env файлі!');
+    throw new Error('MONGO_URI не встановлено в .env файлі!');
   }
   if (!env.JWT_SECRET) {
-    throw new Error('❌ JWT_SECRET не встановлено в .env файлі!');
+    throw new Error('JWT_SECRET не встановлено в .env файлі!');
   }
   return env;
 }

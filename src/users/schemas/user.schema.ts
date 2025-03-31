@@ -89,7 +89,10 @@ export class User extends Document {
   createdCandidates: Types.ObjectId[];
 
   @Prop({ type: [{ type: MongooseSchema.Types.ObjectId, ref: 'User' }] })
-  createdUsers: Types.ObjectId[]; // 🔥 Админ хранит пользователей, которых он создал
+  createdUsers: Types.ObjectId[];
+
+  @Prop({ type: [{ type: MongooseSchema.Types.ObjectId, ref: 'Source' }] })
+  createdSources: Types.ObjectId[];
 
   readonly createdAt: Date;
   readonly updatedAt: Date;

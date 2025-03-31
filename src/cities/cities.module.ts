@@ -1,6 +1,6 @@
 import { Module, forwardRef } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
-import { UsersModule } from '../users/users.module'; // ✅ Додаємо модуль користувачів
+import { UsersModule } from '../users/users.module';
 import { CitiesController } from './cities.controller';
 import { CitiesService } from './cities.service';
 import { City, CitySchema } from './schemas/city.schema';

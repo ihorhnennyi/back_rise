@@ -23,16 +23,10 @@ export class UsersService {
     @InjectModel(Candidate.name) private candidateModel: Model<Candidate>, //
   ) {}
 
-  /**
-   * 🔹 Найти пользователя по email
-   */
   async findByEmail(email: string): Promise<User | null> {
     return this.userModel.findOne({ email }).exec();
   }
 
-  /**
-   * 🔹 Найти пользователя по ID
-   */
   async findOneById(id: string): Promise<User> {
     if (!isValidObjectId(id)) {
       throw new BadRequestException('Некоректний формат ID користувача');
@@ -44,19 +38,18 @@ export class UsersService {
       .populate('createdBranches')
       .populate('createdStatuses')
       .populate('createdIntegrations')
-      .populate('createdUsers', 'firstName lastName email role status'); // ✅ Теперь админ видит созданных пользователей
+      .populate('createdUsers', 'firstName lastName email role status')
+      .populate('createdSources')
+      .populate('createdCandidates');
 
     if (!user) {
-      this.logger.warn(`❌ Користувача з ID ${id} не знайдено`);
+      this.logger.warn(`Користувача з ID ${id} не знайдено`);
       throw new NotFoundException('Користувача не знайдено');
     }
 
     return user;
   }
 
-  /**
-   * 🔹 Получить всех рекрутеров
-   */
   async findAllRecruiters(): Promise<User[]> {
     return this.userModel.find({ role: UserRole.RECRUITER }).exec();
   }
@@ -67,16 +60,11 @@ export class UsersService {
 
   async getCandidatesForUser(user: User): Promise<Candidate[]> {
     if (user.role === UserRole.ADMIN) {
-      // Админ получает всех кандидатов
       return this.candidateModel.find().populate('createdBy assignedTo').exec();
     }
-    // Рекрутер видит только своих кандидатов
     return this.candidateModel.find({ assignedTo: user.id }).exec();
   }
 
-  /**
-   * 🔹 Создать администратора
-   */
   async createAdmin(dto: CreateUserDto): Promise<User> {
     const existingUser = await this.findByEmail(dto.email);
     if (existingUser) {
@@ -88,17 +76,14 @@ export class UsersService {
     const admin = await this.userModel.create({
       ...dto,
       password: hashedPassword,
-      role: UserRole.ADMIN, // Принудительно задаем роль
+      role: UserRole.ADMIN,
     });
 
-    this.logger.log(`✅ Адміністратор ${admin.email} створений`);
+    this.logger.log(`Адміністратор ${admin.email} створений`);
 
     return admin;
   }
 
-  /**
-   * 🔹 Создать рекрутера (только админ)
-   */
   async createRecruiter(dto: CreateUserDto, admin: User): Promise<User> {
     if (admin.role !== UserRole.ADMIN) {
       throw new ForbiddenException(
@@ -124,15 +109,12 @@ export class UsersService {
     await this.addCreatedEntity(admin.id, newUser._id.toString(), 'user');
 
     this.logger.log(
-      `✅ Рекрутер ${newUser.email} створений адміністратором ${admin.email}`,
+      `Рекрутер ${newUser.email} створений адміністратором ${admin.email}`,
     );
 
     return newUser;
   }
 
-  /**
-   * 🔹 Обновить пользователя (только админ)
-   */
   async update(id: string, dto: UpdateUserDto): Promise<User> {
     if (!isValidObjectId(id)) {
       throw new BadRequestException('Некоректний формат ID користувача');
@@ -143,12 +125,16 @@ export class UsersService {
       throw new NotFoundException('Користувача не знайдено');
     }
 
-    // Хешируем пароль, если он передан
+    if (dto.role && user.role !== UserRole.ADMIN) {
+      throw new ForbiddenException(
+        'Тільки адміністратор може змінювати роль користувача',
+      );
+    }
+
     if (dto.password) {
       dto.password = await bcrypt.hash(dto.password, 10);
     }
 
-    // Обновляем только переданные поля
     Object.keys(dto).forEach((key) => {
       if (dto[key] !== undefined) {
         user[key] = dto[key];
@@ -162,9 +148,6 @@ export class UsersService {
     return user;
   }
 
-  /**
-   * 🔹 Удалить пользователя (только админ)
-   */
   async delete(id: string): Promise<void> {
     if (!isValidObjectId(id)) {
       throw new BadRequestException('Некоректний формат ID користувача');
@@ -176,12 +159,9 @@ export class UsersService {
     }
 
     await this.userModel.findByIdAndDelete(id).exec();
-    this.logger.log(`❌ Користувач ${user.email} видалений`);
+    this.logger.log(`Користувач ${user.email} видалений`);
   }
 
-  /**
-   * 🔹 Добавить сущность в список созданных пользователем
-   */
   async addCreatedEntity(userId: string, entityId: string, entityType: string) {
     if (!isValidObjectId(userId) || !isValidObjectId(entityId)) {
       throw new BadRequestException('Некоректний формат ID');
@@ -209,9 +189,20 @@ export class UsersService {
           $push: { createdIntegrations: new Types.ObjectId(entityId) },
         };
         break;
-      case 'user': // ✅ Теперь можно добавлять пользователей
+      case 'user':
         updateField = { $push: { createdUsers: new Types.ObjectId(entityId) } };
         break;
+      case 'source':
+        updateField = {
+          $push: { createdSources: new Types.ObjectId(entityId) },
+        };
+        break;
+      case 'candidate':
+        updateField = {
+          $push: { createdCandidates: new Types.ObjectId(entityId) },
+        };
+        break;
+
       default:
         throw new BadRequestException(
           `Непідтримуваний тип сутності: ${entityType}`,
@@ -221,9 +212,6 @@ export class UsersService {
     await this.userModel.findByIdAndUpdate(userId, updateField, { new: true });
   }
 
-  /**
-   * 🔹 Удалить сущность из списка созданных пользователем
-   */
   async removeCreatedEntity(
     userId: string,
     entityId: string,
@@ -255,9 +243,20 @@ export class UsersService {
           $pull: { createdIntegrations: new Types.ObjectId(entityId) },
         };
         break;
-      case 'user': // ✅ Теперь можно удалять пользователей
+      case 'user':
         updateField = { $pull: { createdUsers: new Types.ObjectId(entityId) } };
         break;
+      case 'source':
+        updateField = {
+          $pull: { createdSources: new Types.ObjectId(entityId) },
+        };
+        break;
+      case 'candidate':
+        updateField = {
+          $pull: { createdCandidates: new Types.ObjectId(entityId) },
+        };
+        break;
+
       default:
         throw new BadRequestException(
           `Непідтримуваний тип сутності: ${entityType}`,
@@ -267,9 +266,6 @@ export class UsersService {
     await this.userModel.findByIdAndUpdate(userId, updateField, { new: true });
   }
 
-  /**
-   * 🔹 Получить все сущности, созданные пользователем
-   */
   async getUserEntities(id: string) {
     if (!isValidObjectId(id)) {
       throw new BadRequestException('Некоректний формат ID користувача');
@@ -281,7 +277,9 @@ export class UsersService {
       createdBranches: user.createdBranches ?? [],
       createdStatuses: user.createdStatuses ?? [],
       createdIntegrations: user.createdIntegrations ?? [],
-      createdUsers: user.createdUsers ?? [], // ✅ Теперь список созданных пользователей доступен
+      createdUsers: user.createdUsers ?? [],
+      createdSources: user.createdSources ?? [],
+      createdCandidates: user.createdCandidates ?? [],
     };
   }
 }

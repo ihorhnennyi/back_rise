@@ -4,43 +4,43 @@ import { Document, Schema as MongooseSchema, Types } from 'mongoose';
 @Schema({ timestamps: true })
 export class Candidate extends Document {
   @Prop({ required: true, trim: true })
-  firstName: string; // Имя
+  firstName: string;
+
+  @Prop({ trim: true })
+  lastName: string;
+
+  @Prop({ trim: true })
+  middleName?: string;
+
+  @Prop({ trim: true })
+  age: number;
+
+  @Prop({ trim: true, unique: false, sparse: true })
+  email?: string;
 
   @Prop({ required: true, trim: true })
-  lastName: string; // Фамилия
+  phone: string;
 
   @Prop({ trim: true })
-  middleName?: string; // Отчество
-
-  @Prop({ required: true })
-  age: number; // Возраст
+  photoUrl?: string;
 
   @Prop({ trim: true })
-  email: string; // Email
-
-  @Prop({ required: false, trim: true })
-  phone: string; // Телефон
-
-  @Prop({ trim: true })
-  photoUrl?: string; // Фото профиля
-
-  @Prop({ trim: true })
-  description?: string; // Описание
+  description?: string;
 
   @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'City', required: false })
-  city: Types.ObjectId; // Город
+  city: Types.ObjectId;
 
   @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'User', required: true })
-  createdBy: Types.ObjectId; // Кто создал кандидата
+  createdBy: Types.ObjectId;
 
   @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'User' })
-  assignedTo?: Types.ObjectId; // Текущий рекрутер
+  assignedTo?: Types.ObjectId;
 
   @Prop({ trim: true })
-  salary: number; // Зарплата
+  salary: number;
 
   @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'Status', required: false })
-  status: Types.ObjectId; // Текущий статус кандидата
+  status: Types.ObjectId;
 
   @Prop({
     type: [
@@ -51,7 +51,10 @@ export class Candidate extends Document {
     ],
     default: [],
   })
-  statusHistory: { status: Types.ObjectId; expirationDate?: Date }[]; // История статусов
+  statusHistory: { status: Types.ObjectId; expirationDate?: Date }[];
+
+  @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'Source' })
+  source?: Types.ObjectId;
 
   readonly createdAt: Date;
   readonly updatedAt: Date;

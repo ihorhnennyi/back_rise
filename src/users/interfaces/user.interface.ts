@@ -27,4 +27,10 @@ export interface IUser extends Document {
   readonly comment?: string;
   readonly createdAt: Date;
   readonly updatedAt: Date;
+  readonly createdUsers?: Types.ObjectId[];
+  readonly createdCandidates?: Types.ObjectId[];
+  readonly createdCities?: Types.ObjectId[];
+  readonly createdBranches?: Types.ObjectId[];
+  readonly createdStatuses?: Types.ObjectId[];
+  readonly createdIntegrations?: Types.ObjectId[];
 }
